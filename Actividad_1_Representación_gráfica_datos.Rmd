@@ -1,0 +1,76 @@
+---
+title: "Actividad_1_Representación_gráfica_datos"
+author: "Mirkka Puente Madrid"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Representación gráfica de datos e interpretación de resultados
+
+Visualización de datos biológicos y análisis estadístico de un dataset que contiene información de la expresión de 40 genes en 65 pacientes con cáncer de mama, cada uno con distintos tipos de tratamiento y características tumorales.
+
+El objetivo principal es interpretar los datos mediante la generación de gráficos y dar respuesta a preguntas específicas.
+
+### Preguntas
+
+**1. Ten en cuenta los siguientes genes: "AQ_ESR1", "AQ_HER2", "AQ_BRCA1", "AQ_BRCA2", "AQ_MKI67", "AQ_GATA3", "AQ_FOXA1", "AQ_CCND1", "AQ_CDH1", "AQ_TP53":**
+
+-   Para responder este ejercicio, apóyate en un diagrama de cajas en el que visualices por cada expresión de gen 2 cajas: 1 para trata y otro para tratB.
+
+#### Gráfico de Boxplots
+
+```{r, include=FALSE}
+#Remover todas las variables creadas en environment so far
+rm(list=ls())
+setwd("C:\Users\User\Desktop\UNIR\Estadistica_R\Statistics_and_R")
+
+#Save the data in our environment
+file <- "MUBioinfo_dataset_genes_oct2025.csv"
+df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
+
+#Install libraries
+#install.packages(c("ggplot2", "dplyr", "pheatmap", "patchwork"))
+#install.packages("patchwork")
+
+library(ggplot2)
+library(dplyr)
+library(pheatmap)
+library(patchwork)
+
+#### ---- Box plots ---- ####
+#Seleccionar las columnas que quiero usar
+genes <- c("AQ_esr1", "AQ_her2", "AQ_brca1", "AQ_brca2", "AQ_mki67", "AQ_gata3", "AQ_foxa1", "AQ_ccnd1", "AQ_cdh1", "AQ_tp53")
+
+df_q1 <- df %>%
+  select(tratamiento, all_of(genes))
+
+#Grafico de los boxplots
+
+list_boxplots <- list()
+
+for (boxplot in list_boxplots) {
+  boxplot <- ggplot(df_q1, aes(x = tratamiento, y = .data[[genes[1]]], fill = tratamiento)) +
+    geom_boxplot(
+      outlier.color = "black",
+      outlier.size = 2,
+      width = 0.7
+    ) +
+    labs(title = "Expresión del gen AQ_ESR1",
+         x = "Tratamientos",
+         y = expression("AQ (2"^-Delta * "Ct)")) +
+    scale_fill_manual(values = c("lavender", "mistyrose")) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+  
+}
+
+
+
+combined_boxplot <- bp1 + plot_layout(ncol = 5) 
+
+combined_boxplot
+
+``` 
+
+-   ¿Qué interpretación sacas de la distribución de la expresión de los genes cuando los comparamos por tipo de tratamiento? (mínimo 150 palabras de extensión).
+
