@@ -22,7 +22,7 @@ El objetivo principal es interpretar los datos mediante la generación de gráfi
 ```{r, include=FALSE}
 #Remover todas las variables creadas en environment so far
 rm(list=ls())
-setwd("C:\Users\User\Desktop\UNIR\Estadistica_R\Statistics_and_R")
+setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
 
 #Save the data in our environment
 file <- "MUBioinfo_dataset_genes_oct2025.csv"
@@ -47,30 +47,39 @@ df_q1 <- df %>%
 #Grafico de los boxplots
 
 list_boxplots <- list()
+indice <- 1
 
-for (boxplot in list_boxplots) {
-  boxplot <- ggplot(df_q1, aes(x = tratamiento, y = .data[[genes[1]]], fill = tratamiento)) +
+for (gen in genes) {
+  bp <- ggplot(df_q1, aes(x = tratamiento, y = .data[[gen]], fill = tratamiento)) +
     geom_boxplot(
       outlier.color = "black",
       outlier.size = 2,
       width = 0.7
     ) +
-    labs(title = "Expresión del gen AQ_ESR1",
-         x = "Tratamientos",
-         y = expression("AQ (2"^-Delta * "Ct)")) +
+    labs(
+      title = paste0("Expresión del ", gen),
+      x = "Tratamientos",
+      y = expression("AQ (2"^-Delta * "Ct)")
+    ) +
     scale_fill_manual(values = c("lavender", "mistyrose")) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
   
+  list_boxplots[[indice]] <- bp
+  indice <- indice + 1
+  rm(bp)
 }
 
-
-
-combined_boxplot <- bp1 + plot_layout(ncol = 5) 
+#Combina todos los plots en una hoja
+combined_boxplot <- wrap_plots(list_boxplots, ncol = 2) 
 
 combined_boxplot
 
-``` 
+```
 
--   ¿Qué interpretación sacas de la distribución de la expresión de los genes cuando los comparamos por tipo de tratamiento? (mínimo 150 palabras de extensión).
+-   ¿Qué interpretación sacas de la distribución de la expresión de los genes cuando los comparamos por tipo de tratamiento?
+
+La distribución de la expresión de los genes muestra que todos los genes evaluados presentan mayor expresión en el tratamiento con placebo en comparación con el tratamiento con fármaco. En los diagramas de cajas, los pacientes bajo tratamiento farmacológico muestran expresión génica con valores de AQ cercanos a 0, lo que indica ausencia de transcripción o expresión muy baja. Sin embargo, los pacientes bajo el tratamiento con placebo muestran expresión génica con valores muchos más altos a 0.6 en mediana, lo que indica una actividad génica claramente superior.  
+
+El patrón observado se dá en genes asociados a desarrollo y diferenciación celular (ESR1, FOXA1, GATA3, CDH1), proliferación y ciclo celular (HER2, MKI67, CCND1) y reparación del ADN y apoptosis (BRCA1, BRCA2, TP53). Estos resultados sugieren que el fármaco está reprimiendo la transcripción de los genes estudiados. Podría ser que exista una reducción en la proliferación de células cancerígenas o reducción en procesos celulares asociados a los tumores. 
 
