@@ -92,6 +92,8 @@ El patrón observado se dá en genes asociados a desarrollo y diferenciación ce
 
 -   Para responder este ejercicio, apóyate en un histograma en el que se visualice la frecuencia de cada variable, utilizando aproximadamente 30 bins (a mayor bins, mayor número de barras).
 
+#### Gráficos de Histogramas
+
 ```{r histogramas, fig.width=12, fig.height=8, fig.align='center', out.width="90%", include=TRUE}
 #Remover todas las variables creadas en environment so far
 rm(list=ls())
@@ -158,3 +160,64 @@ combined_hist
 -   ¿Qué interpretación sacas de la distribución de los datos de las variables bioquímicas en toda la población? (mínimo 100 palabras de extensión).
 
 -   ¿Crees que sigue una distribución normal o simétrica en la que se visualiza una distribución parecida a una campana de Gauss? (mínimo 100 palabras de extensión).
+
+**3. Mapea todos los valores de expresión de genes para poder visualizar posibles patrones entre los datos de los pacientes:**
+
+-   Para responder esta pregunta, apóyate en un heatmap en el que visualices los datos crudos de todas las variables AQ (expresión de genes).
+
+#### Gráfico de Heatmap
+
+```{r heatmap, include=TRUE}
+
+#Remover todas las variables creadas en environment so far
+rm(list=ls())
+setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
+
+#Save the data in our environment
+file <- "MUBioinfo_dataset_genes_oct2025.csv"
+df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
+
+# Instalación (solo la primera vez)
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) BiocManager::install("ComplexHeatmap")
+if (!requireNamespace("circlize", quietly = TRUE)) install.packages("circlize")
+
+#Install libraries
+#install.packages(c("ggplot2", "dplyr", "patchwork"))
+#install.packages()
+
+# Cargar
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+library(ComplexHeatmap)
+library(grid)        
+library(circlize)    
+
+#Seleccionar solo las columnas de genes 
+
+df_q3 <- df %>% select(starts_with("AQ_"))
+mat_q3 <- t(df_q3)  # transponer las columnas con filas
+mat_q3_escala <- t(scale(t(mat_q3))) #datos escalados
+ 
+#Heatmap
+colores_heatmap <- colorRamp2(c(-2, -1, 0, 1, 2), 
+                      c("blue", "lightblue", "white", "mistyrose", "lightpink"))
+
+set.seed(1995) #Semilla
+Heatmap(mat_q3_escala,
+        row_km = 2,
+        column_km = 2,
+        row_names_gp = gpar(fontsize = 8),
+        col = colores_heatmap,
+        heatmap_legend_param = list(title = "Puntuación Estandarizada", 
+                                    at = c(-2, 0, 2), 
+                                    labels = c("Baja", "Media", "Alta")))
+
+
+```
+
+-   ¿Hay algún tipo de patrón de pacientes que tiene la expresión de genes similar o diferenciada? (mínimo 150 palabras de extensión).
+
+-   ¿Hay grupos de genes con patrones de expresión similares o diferenciadas? 
+
