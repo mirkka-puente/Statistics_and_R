@@ -19,7 +19,7 @@ El objetivo principal es interpretar los datos mediante la generación de gráfi
 
 #### Gráfico de Boxplots
 
-```{r, include=TRUE}
+```{r boxplots, fig.width=7, fig.height=7, fig.align='center', out.width="50%", include=TRUE}
 #Remover todas las variables creadas en environment so far
 rm(list=ls())
 setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
@@ -44,24 +44,31 @@ df_q1 <- df %>%
 
 #Grafico de los boxplots
 
-list_boxplots <- list()
-indice <- 1
+list_boxplots <- list()  #lista de graficos
+indice <- 1              #indice en la lista
 
 for (gen in genes) {
-  bp <- ggplot(df_q1, aes(x = tratamiento, y = .data[[gen]], fill = tratamiento)) +
+  bp <- ggplot(df_q1, aes(x = tratamiento, y = .data[[gen]], fill = tratamiento)) + 
     geom_boxplot(
       outlier.color = "black",
       outlier.size = 2,
-      width = 0.7
+      width = 0.5
+    ) +
+    geom_jitter(  #puntos en los boxplots
+      aes(color = tratamiento),
+      width = 0.1,   
+      height = 0,    
+      size = 0.3,   
+      alpha = 1,   
     ) +
     labs(
       title = paste0("Expresión del ", gen),
       x = "Tratamientos",
       y = expression("AQ (2"^-Delta * "Ct)")
     ) +
-    scale_fill_manual(values = c("lavender", "mistyrose")) +
+    scale_fill_manual(values = c("mistyrose", "lightblue")) +
     theme_minimal() +
-    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 12))
   
   list_boxplots[[indice]] <- bp
   indice <- indice + 1
@@ -85,7 +92,7 @@ El patrón observado se dá en genes asociados a desarrollo y diferenciación ce
 
 -   Para responder este ejercicio, apóyate en un histograma en el que se visualice la frecuencia de cada variable, utilizando aproximadamente 30 bins (a mayor bins, mayor número de barras).
 
-```{r, include=TRUE}
+```{r histogramas, fig.width=12, fig.height=8, fig.align='center', out.width="90%", include=TRUE}
 #Remover todas las variables creadas en environment so far
 rm(list=ls())
 setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
@@ -95,11 +102,12 @@ file <- "MUBioinfo_dataset_genes_oct2025.csv"
 df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
 
 #Install libraries
-#install.packages(c("ggplot2", "dplyr"))
+#install.packages(c("ggplot2", "dplyr", "patchwork"))
 #install.packages()
 
 library(ggplot2)
 library(dplyr)
+library(patchwork)
 
 
 #### ---- Histogramas ---- ####
@@ -108,24 +116,42 @@ parametros_bio <- c("glucosa", "leucocitos", "linfocitos", "neutrofilos", "chol"
 
 df_q2 <- df %>% select(all_of(parametros_bio))
 
-ggplot(df_q2, aes(x = hdl)) +
-  geom_histogram(
-    aes(y = ..density..),
-    color = "darkblue",
-    fill = "lavender",
-    position = "identity",
-    bins = 30
-  ) +
-  geom_density(
-    lwd = 0.5,
-    colour = 6,
-    fill = 6,
-    alpha = 0.15
-  ) +
-  labs(title = "Distribución de HDL", x = "HDL (mg/dL)", y = "Frecuencia") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+list_hist <- list()
+i <- 1
 
+for (parametro in parametros_bio) {
+  h <- ggplot(df_q2) +
+    geom_histogram(
+      aes(x = .data[[parametro]], y = after_stat(density)),
+      color = "darkblue",
+      fill = "lavender",
+      position = "identity",
+      bins = 30
+    ) +
+    geom_density(
+      aes(x = .data[[parametro]], y = after_stat(density)),
+      lwd = 0.5,
+      colour = 6,
+      fill = 6,
+      alpha = 0.15
+    ) +
+    labs(
+      title = paste0("Distribución de ", toupper(parametro)),
+      x = parametro,
+      y = "Frecuancia"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+  
+  list_hist[[i]] <- h
+  i <- i + 1
+  rm(h)
+}
+
+#Combina todos los plots en una hoja
+combined_hist <- wrap_plots(list_hist, ncol = 4) 
+
+combined_hist
 
 ```
 
