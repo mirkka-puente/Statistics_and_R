@@ -19,7 +19,7 @@ El objetivo principal es interpretar los datos mediante la generación de gráfi
 
 #### Gráfico de Boxplots
 
-```{r, include=FALSE}
+```{r, include=TRUE}
 #Remover todas las variables creadas en environment so far
 rm(list=ls())
 setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
@@ -29,12 +29,10 @@ file <- "MUBioinfo_dataset_genes_oct2025.csv"
 df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
 
 #Install libraries
-#install.packages(c("ggplot2", "dplyr", "pheatmap", "patchwork"))
-#install.packages("patchwork")
+#install.packages(c("ggplot2", "dplyr", "patchwork"))
 
 library(ggplot2)
 library(dplyr)
-library(pheatmap)
 library(patchwork)
 
 #### ---- Box plots ---- ####
@@ -79,7 +77,58 @@ combined_boxplot
 
 -   ¿Qué interpretación sacas de la distribución de la expresión de los genes cuando los comparamos por tipo de tratamiento?
 
-La distribución de la expresión de los genes muestra que todos los genes evaluados presentan mayor expresión en el tratamiento con placebo en comparación con el tratamiento con fármaco. En los diagramas de cajas, los pacientes bajo tratamiento farmacológico muestran expresión génica con valores de AQ cercanos a 0, lo que indica ausencia de transcripción o expresión muy baja. Sin embargo, los pacientes bajo el tratamiento con placebo muestran expresión génica con valores muchos más altos a 0.6 en mediana, lo que indica una actividad génica claramente superior.  
+La distribución de la expresión de los genes muestra que todos los genes evaluados presentan mayor expresión en el tratamiento con placebo en comparación con el tratamiento con fármaco. En los diagramas de cajas, los pacientes bajo tratamiento farmacológico muestran expresión génica con valores de AQ cercanos a 0, lo que indica ausencia de transcripción o expresión muy baja. Sin embargo, los pacientes bajo el tratamiento con placebo muestran expresión génica con valores aproximados a 0.9 en mediana, lo que indica una actividad génica claramente superior.
 
-El patrón observado se dá en genes asociados a desarrollo y diferenciación celular (ESR1, FOXA1, GATA3, CDH1), proliferación y ciclo celular (HER2, MKI67, CCND1) y reparación del ADN y apoptosis (BRCA1, BRCA2, TP53). Estos resultados sugieren que el fármaco está reprimiendo la transcripción de los genes estudiados. Podría ser que exista una reducción en la proliferación de células cancerígenas o reducción en procesos celulares asociados a los tumores. 
+El patrón observado se dá en genes asociados a desarrollo y diferenciación celular (ESR1, FOXA1, GATA3, CDH1), proliferación y ciclo celular (HER2, MKI67, CCND1) y reparación del ADN y apoptosis (BRCA1, BRCA2, TP53). Estos resultados sugieren que el fármaco está reprimiendo la transcripción de los genes estudiados. Podría ser que exista una reducción en la proliferación de células cancerígenas o reducción en procesos celulares asociados a los tumores.
 
+**2. Ten en cuenta los siguientes parámetros bioquímicos para toda la población: "glucosa", "leucocitos", "linfocitos", "neutrofilos", "chol", "hdl", "hierro", "igA", "igE", "igG", "igN", "ldl", "pcr", "transferrina", "trigliceridos", "cpk":**
+
+-   Para responder este ejercicio, apóyate en un histograma en el que se visualice la frecuencia de cada variable, utilizando aproximadamente 30 bins (a mayor bins, mayor número de barras).
+
+```{r, include=TRUE}
+#Remover todas las variables creadas en environment so far
+rm(list=ls())
+setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
+
+#Save the data in our environment
+file <- "MUBioinfo_dataset_genes_oct2025.csv"
+df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
+
+#Install libraries
+#install.packages(c("ggplot2", "dplyr"))
+#install.packages()
+
+library(ggplot2)
+library(dplyr)
+
+
+#### ---- Histogramas ---- ####
+#Seleccionar las columnas con las que voy a trabajar
+parametros_bio <- c("glucosa", "leucocitos", "linfocitos", "neutrofilos", "chol", "hdl", "hierro", "iga", "ige", "igg", "ign", "ldl", "pcr", "transferrina", "trigliceridos", "cpk")
+
+df_q2 <- df %>% select(all_of(parametros_bio))
+
+ggplot(df_q2, aes(x = hdl)) +
+  geom_histogram(
+    aes(y = ..density..),
+    color = "darkblue",
+    fill = "lavender",
+    position = "identity",
+    bins = 30
+  ) +
+  geom_density(
+    lwd = 0.5,
+    colour = 6,
+    fill = 6,
+    alpha = 0.15
+  ) +
+  labs(title = "Distribución de HDL", x = "HDL (mg/dL)", y = "Frecuencia") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+
+```
+
+-   ¿Qué interpretación sacas de la distribución de los datos de las variables bioquímicas en toda la población? (mínimo 100 palabras de extensión).
+
+-   ¿Crees que sigue una distribución normal o simétrica en la que se visualiza una distribución parecida a una campana de Gauss? (mínimo 100 palabras de extensión).
