@@ -140,7 +140,7 @@ for (parametro in parametros_bio) {
     labs(
       title = paste0("Distribución de ", toupper(parametro)),
       x = parametro,
-      y = "Frecuancia"
+      y = "Frecuencia"
     ) +
     theme_minimal() +
     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
@@ -157,9 +157,17 @@ combined_hist
 
 ```
 
--   ¿Qué interpretación sacas de la distribución de los datos de las variables bioquímicas en toda la población? (mínimo 100 palabras de extensión).
+-   ¿Qué interpretación sacas de la distribución de los datos de las variables bioquímicas en toda la población?
 
--   ¿Crees que sigue una distribución normal o simétrica en la que se visualiza una distribución parecida a una campana de Gauss? (mínimo 100 palabras de extensión).
+La distribuición de datos de las variables bioquímicas no siguen una distribución normal. En la mayoría de distribuciónes se observa un sesgo marcado a la derecha, especialmente en PCR, neutrófilos, IgN y triglicéridos, lo que nos indica que la mayoría de los pacientes tienen valores bioquímicos relativamente bajos en las variables estudiadas. Este comportamiento es esperado para biomarcadores asociados al cáncer: inflamación y respuesta inmune en pacientes enfermos.  
+
+Los datos tan asimétricos nos indican que antes de analizarlos deberíamos transformar los datos (estandarizarlos o utilizar una transformación log) para luego poder realizar pruebas de hipótesis o análisis de datos. 
+
+-   ¿Crees que sigue una distribución normal o simétrica en la que se visualiza una distribución parecida a una campana de Gauss? 
+
+En la mayoría de las variables no se observa una distribución en forma similar a la campana de Gauss.
+
+Una distribución más parecida a la campana de Gauss se observa en el gráfico de transferrina que es una proteína que ayuda en el transporte de hierro en la sangre. Aunque incluso en esta gráfica se observan outliers importantes. Esta forma de campana es solo una impresión. Puede que siga una distribución normal, sin embargo, no podemos estar seguros hasta realizar una prueba formal de normalidad ya que la forma no garantiza que los datos estén en distribución normal.
 
 **3. Mapea todos los valores de expresión de genes para poder visualizar posibles patrones entre los datos de los pacientes:**
 
