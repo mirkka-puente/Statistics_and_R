@@ -177,14 +177,13 @@ setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
 file <- "MUBioinfo_dataset_genes_oct2025.csv"
 df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
 
-# Instalación (solo la primera vez)
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) BiocManager::install("ComplexHeatmap")
-if (!requireNamespace("circlize", quietly = TRUE)) install.packages("circlize")
+# Instalación
+pack_list <- c("BiocManager", "ComplexHeatmap", "circlize", "ggplot2", "dplyr", "patchwork")
 
-#Install libraries
-#install.packages(c("ggplot2", "dplyr", "patchwork"))
-#install.packages()
+for (pack in pack_list) {
+  if (!requireNamespace(pack, quietly = TRUE)) install.packages(pack)
+}
+
 
 # Cargar
 library(ggplot2)
@@ -195,24 +194,35 @@ library(grid)
 library(circlize)    
 
 #Seleccionar solo las columnas de genes 
-
 df_q3 <- df %>% select(starts_with("AQ_"))
 mat_q3 <- t(df_q3)  # transponer las columnas con filas
 mat_q3_escala <- t(scale(t(mat_q3))) #datos escalados
  
-#Heatmap
+### --------  Heatmap  ---------------
+#Definir colores del heatmap
 colores_heatmap <- colorRamp2(c(-2, -1, 0, 1, 2), 
                       c("blue", "lightblue", "white", "mistyrose", "lightpink"))
 
-set.seed(1995) #Semilla
-Heatmap(mat_q3_escala,
-        row_km = 2,
-        column_km = 2,
-        row_names_gp = gpar(fontsize = 8),
-        col = colores_heatmap,
-        heatmap_legend_param = list(title = "Puntuación Estandarizada", 
-                                    at = c(-2, 0, 2), 
-                                    labels = c("Baja", "Media", "Alta")))
+#Semilla
+set.seed(1995) 
+
+#Grafico de heatmap
+Heatmap(
+  mat_q3_escala,
+  row_km = 3,
+  column_km = 3,
+  row_gap = unit(3, "mm"),
+  column_gap = unit(1, "mm"),
+  row_names_gp = gpar(fontsize = 8),
+  col = colores_heatmap,
+  #row_order = TRUE,
+  #column_order = TRUE,
+  heatmap_legend_param = list(
+    title = "Puntuación Z",
+    at = c(-2, 0, 2),
+    labels = c("Baja", "Media", "Alta")
+  )
+)
 
 
 ```
