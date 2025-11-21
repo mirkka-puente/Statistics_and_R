@@ -199,6 +199,13 @@ mat_q3 <- t(df_q3)  # transponer las columnas con filas
 mat_q3_escala <- t(scale(t(mat_q3))) #datos escalados
  
 ### --------  Heatmap  ---------------
+# anotación para tener informacion de pacientes
+
+tipo_tumor <- df$extension
+
+tumor <- HeatmapAnnotation(Extension_tumor = tipo_tumor,
+  col = list(Extension_tumor = c("localizado" = "#FFE7BA", "metastasico" = "#C1FFC1")))
+
 #Definir colores del heatmap
 colores_heatmap <- colorRamp2(c(-2, -1, 0, 1, 2), 
                       c("blue", "lightblue", "white", "mistyrose", "lightpink"))
@@ -209,10 +216,10 @@ set.seed(1995)
 #Grafico de heatmap
 Heatmap(
   mat_q3_escala,
+  top_annotation = tumor,
   row_km = 3,
-  column_km = 3,
+  column_km = 1,
   row_gap = unit(3, "mm"),
-  column_gap = unit(1, "mm"),
   row_names_gp = gpar(fontsize = 8),
   col = colores_heatmap,
   heatmap_legend_param = list(
@@ -224,7 +231,15 @@ Heatmap(
 
 ```
 
--   ¿Hay algún tipo de patrón de pacientes que tiene la expresión de genes similar o diferenciada? (mínimo 150 palabras de extensión).
+-   ¿Hay algún tipo de patrón de pacientes que tiene la expresión de genes similar o diferenciada? 
+
+El patrón que se puede observar es que los pacientes con tumores metastásicos tienen a agruparse en un mismo segmento del dendograma de columnas, lo que indica que comparten un perfil de expresión génica más parecido entre sí y claramente diferente al de pacientes con tumores localizados. Los pacientes con tumores metastásicos muestran niveles de expresión génica altos (tonos rosados) en el segundo clúster de genes (filas), mientras que los pacientes con tumores localizados muestran baja expresión génica (tonos azules) en éstos genes. 
+
+Los genes del segundo clúster en filas incluye genes asociados a la inflamación, señalización inmune, regulación positiva de expresión génica y regulación positiva de la proliferación de células (i.e. IL6, ACTB, EGFR, VEGFA). Es decir, los pacientes con metástasis tienen una expresión génica más alta de genes relacionados con proliferación celular y su diseminación. 
+
+El heatmap nos confirma que existe un patrón en la expresión de genes al diferenciar a pacientes con extensión tumoral metastásica de pacientes con extensión tumoral localizada. 
 
 -   ¿Hay grupos de genes con patrones de expresión similares o diferenciadas? 
 
+Sí hay genes con patrones de expresión similar que se agrupan bien en los tres clústers. En el clúster 1, en la parte superior, su expresión es relativamente baja y están asociados a funciones biológicas como la proliferación celular y la regulación positiva de la trasncripción de ADN. En el segundo clúster (medio), la mayoría de genes participan en respuestas inflamatorias y se puede apreciar claramente que pacientes con tumores metastásicos muestran alta expresión de estos genes. En el tercer clúster, la expresión es variable. La expresión de ciertos genes es alta en ciertos pacientes y muy baja en otros. Los genes agrupados en este clúster comparten funciones biológicas como el proceso de apoptósis, la regulación de la estabilidad de protínas y la respuesta a factores de crecimiento. 
+En conclusión, existen grupos de genes con patrones de expresión similares, y el clúster del medio es el más diferencial y relevante.
