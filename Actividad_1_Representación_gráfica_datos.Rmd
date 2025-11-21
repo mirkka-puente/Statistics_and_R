@@ -1,9 +1,23 @@
 ---
 title: "Actividad_1_Representación_gráfica_datos"
 author: "Mirkka Puente Madrid"
-date: "`r Sys.Date()`"
-output: html_document
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    number_sections: true
+    highlight: tango
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,  # oculta mensajes (como los de cargar librerías)
+  warning = FALSE,  # oculta warnings
+  echo = TRUE       
+)
+```
 
 # Representación gráfica de datos e interpretación de resultados
 
@@ -159,11 +173,11 @@ combined_hist
 
 -   ¿Qué interpretación sacas de la distribución de los datos de las variables bioquímicas en toda la población?
 
-La distribuición de datos de las variables bioquímicas no siguen una distribución normal. En la mayoría de distribuciónes se observa un sesgo marcado a la derecha, especialmente en PCR, neutrófilos, IgN y triglicéridos, lo que nos indica que la mayoría de los pacientes tienen valores bioquímicos relativamente bajos en las variables estudiadas. Este comportamiento es esperado para biomarcadores asociados al cáncer: inflamación y respuesta inmune en pacientes enfermos.  
+La distribuición de datos de las variables bioquímicas no siguen una distribución normal. En la mayoría de distribuciónes se observa un sesgo marcado a la derecha, especialmente en PCR, neutrófilos, IgN y triglicéridos, lo que nos indica que la mayoría de los pacientes tienen valores bioquímicos relativamente bajos en las variables estudiadas. Este comportamiento es esperado para biomarcadores asociados al cáncer: inflamación y respuesta inmune en pacientes enfermos.
 
-Los datos tan asimétricos nos indican que antes de analizarlos deberíamos transformar los datos (estandarizarlos o utilizar una transformación log) para luego poder realizar pruebas de hipótesis o análisis de datos. 
+Los datos tan asimétricos nos indican que antes de analizarlos deberíamos transformar los datos (estandarizarlos o utilizar una transformación log) para luego poder realizar pruebas de hipótesis o análisis de datos.
 
--   ¿Crees que sigue una distribución normal o simétrica en la que se visualiza una distribución parecida a una campana de Gauss? 
+-   ¿Crees que sigue una distribución normal o simétrica en la que se visualiza una distribución parecida a una campana de Gauss?
 
 En la mayoría de las variables no se observa una distribución en forma similar a la campana de Gauss.
 
@@ -178,18 +192,24 @@ Una distribución más parecida a la campana de Gauss se observa en el gráfico 
 ```{r heatmap, include=TRUE}
 
 #Remover todas las variables creadas en environment so far
-rm(list=ls())
+rm(list = ls())
 setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
 
 #Save the data in our environment
 file <- "MUBioinfo_dataset_genes_oct2025.csv"
-df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
+df <- read.csv(file, fileEncoding = "UTF-8-BOM", check.names = FALSE)
 
 # Instalación
-pack_list <- c("BiocManager", "ComplexHeatmap", "circlize", "ggplot2", "dplyr", "patchwork")
+pack_list <- c("BiocManager",
+               "ComplexHeatmap",
+               "circlize",
+               "ggplot2",
+               "dplyr",
+               "patchwork")
 
 for (pack in pack_list) {
-  if (!requireNamespace(pack, quietly = TRUE)) install.packages(pack)
+  if (!requireNamespace(pack, quietly = TRUE))
+    install.packages(pack)
 }
 
 
@@ -198,28 +218,33 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 library(ComplexHeatmap)
-library(grid)        
-library(circlize)    
+library(grid)
+library(circlize)
 
-#Seleccionar solo las columnas de genes 
+#Seleccionar solo las columnas de genes
 df_q3 <- df %>% select(starts_with("AQ_"))
 mat_q3 <- t(df_q3)  # transponer las columnas con filas
 mat_q3_escala <- t(scale(t(mat_q3))) #datos escalados
- 
+
 ### --------  Heatmap  ---------------
 # anotación para tener informacion de pacientes
 
 tipo_tumor <- df$extension
 
 tumor <- HeatmapAnnotation(Extension_tumor = tipo_tumor,
-  col = list(Extension_tumor = c("localizado" = "#FFE7BA", "metastasico" = "#C1FFC1")))
+                           col = list(
+                             Extension_tumor = c(
+                               "localizado" = "#FFE7BA",
+                               "metastasico" = "#C1FFC1"
+                             )
+                           ))
 
 #Definir colores del heatmap
-colores_heatmap <- colorRamp2(c(-2, -1, 0, 1, 2), 
-                      c("blue", "lightblue", "white", "mistyrose", "lightpink"))
+colores_heatmap <- colorRamp2(c(-2, -1, 0, 1, 2),
+                              c("blue", "lightblue", "white", "mistyrose", "lightpink"))
 
 #Semilla
-set.seed(1995)   
+set.seed(1995)
 
 #Grafico de heatmap
 Heatmap(
@@ -239,15 +264,14 @@ Heatmap(
 
 ```
 
--   ¿Hay algún tipo de patrón de pacientes que tiene la expresión de genes similar o diferenciada? 
+-   ¿Hay algún tipo de patrón de pacientes que tiene la expresión de genes similar o diferenciada?
 
-El patrón que se puede observar es que los pacientes con tumores metastásicos tienen a agruparse en un mismo segmento del dendograma de columnas, lo que indica que comparten un perfil de expresión génica más parecido entre sí y claramente diferente al de pacientes con tumores localizados. Los pacientes con tumores metastásicos muestran niveles de expresión génica altos (tonos rosados) en el segundo clúster de genes (filas), mientras que los pacientes con tumores localizados muestran baja expresión génica (tonos azules) en éstos genes. 
+El patrón que se puede observar es que los pacientes con tumores metastásicos tienen a agruparse en un mismo segmento del dendograma de columnas, lo que indica que comparten un perfil de expresión génica más parecido entre sí y claramente diferente al de pacientes con tumores localizados. Los pacientes con tumores metastásicos muestran niveles de expresión génica altos (tonos rosados) en el segundo clúster de genes (filas), mientras que los pacientes con tumores localizados muestran baja expresión génica (tonos azules) en éstos genes.
 
-Los genes del segundo clúster en filas incluye genes asociados a la inflamación, señalización inmune, regulación positiva de expresión génica y regulación positiva de la proliferación de células (i.e. IL6, ACTB, EGFR, VEGFA). Es decir, los pacientes con metástasis tienen una expresión génica más alta de genes relacionados con proliferación celular y su diseminación. 
+Los genes del segundo clúster en filas incluye genes asociados a la inflamación, señalización inmune, regulación positiva de expresión génica y regulación positiva de la proliferación de células (i.e. IL6, ACTB, EGFR, VEGFA). Es decir, los pacientes con metástasis tienen una expresión génica más alta de genes relacionados con proliferación celular y su diseminación.
 
-El heatmap nos confirma que existe un patrón en la expresión de genes al diferenciar a pacientes con extensión tumoral metastásica de pacientes con extensión tumoral localizada. 
+El heatmap nos confirma que existe un patrón en la expresión de genes al diferenciar a pacientes con extensión tumoral metastásica de pacientes con extensión tumoral localizada.
 
--   ¿Hay grupos de genes con patrones de expresión similares o diferenciadas? 
+-   ¿Hay grupos de genes con patrones de expresión similares o diferenciadas?
 
-Sí hay genes con patrones de expresión similar que se agrupan bien en los tres clústers. En el clúster 1, en la parte superior, su expresión es relativamente baja y están asociados a funciones biológicas como la proliferación celular y la regulación positiva de la trasncripción de ADN. En el segundo clúster (medio), la mayoría de genes participan en respuestas inflamatorias y se puede apreciar claramente que pacientes con tumores metastásicos muestran alta expresión de estos genes. En el tercer clúster, la expresión es variable. La expresión de ciertos genes es alta en ciertos pacientes y muy baja en otros. Los genes agrupados en este clúster comparten funciones biológicas como el proceso de apoptósis, la regulación de la estabilidad de protínas y la respuesta a factores de crecimiento. 
-En conclusión, existen grupos de genes con patrones de expresión similares, y el clúster del medio es el más diferencial y relevante.
+Sí hay genes con patrones de expresión similar que se agrupan bien en los tres clústers. En el clúster 1, en la parte superior, su expresión es relativamente baja y están asociados a funciones biológicas como la proliferación celular y la regulación positiva de la trasncripción de ADN. En el segundo clúster (medio), la mayoría de genes participan en respuestas inflamatorias y se puede apreciar claramente que pacientes con tumores metastásicos muestran alta expresión de estos genes. En el tercer clúster, la expresión es variable. La expresión de ciertos genes es alta en ciertos pacientes y muy baja en otros. Los genes agrupados en este clúster comparten funciones biológicas como el proceso de apoptósis, la regulación de la estabilidad de protínas y la respuesta a factores de crecimiento. En conclusión, existen grupos de genes con patrones de expresión similares, y el clúster del medio es el más diferencial y relevante.
