@@ -204,7 +204,7 @@ colores_heatmap <- colorRamp2(c(-2, -1, 0, 1, 2),
                       c("blue", "lightblue", "white", "mistyrose", "lightpink"))
 
 #Semilla
-set.seed(1995) 
+set.seed(1995)   
 
 #Grafico de heatmap
 Heatmap(
@@ -215,15 +215,12 @@ Heatmap(
   column_gap = unit(1, "mm"),
   row_names_gp = gpar(fontsize = 8),
   col = colores_heatmap,
-  #row_order = TRUE,
-  #column_order = TRUE,
   heatmap_legend_param = list(
-    title = "Puntuación Z",
+    title = "Expresión Estandarizada",
     at = c(-2, 0, 2),
     labels = c("Baja", "Media", "Alta")
   )
 )
-
 
 ```
 
