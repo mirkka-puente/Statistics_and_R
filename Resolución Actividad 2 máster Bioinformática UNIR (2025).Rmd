@@ -1,0 +1,163 @@
+---
+title: "Resolución Actividad 2 máster Bioinformática UNIR (2025)"
+author: "Mirkka Jossette Puente Madrid"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,  # oculta mensajes (como los de cargar librerías)
+  warning = FALSE,  # oculta warnings
+  echo = TRUE       
+)
+```
+
+# Actividades:
+
+1. Comprobar la normalidad de los genes y realizar una interpretación de los resultados obtenidos:
+- Utilizar pruebas estadísticas de normalidad (recuerda que Shapiro-Wilk funciona cuando la N es pequeña, si no puedes usar otras como addtest). 
+- Refleja los valores p del contraste de hipótesis en una tabla modelo 1 adjunta al final de documento en la sección «Extensión y formato».
+
+
+```{r}
+#Remover todas las variables creadas en environment so far
+rm(list=ls())
+setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
+
+#Save the data in our environment
+file <- "MUBioinfo_dataset_genes_oct2025_act2.csv"
+df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
+
+#Install libraries
+#install.packages(c("ggplot2", "nortest", "car", "gtsummary", "dplyr"))
+
+library(ggplot2)
+library(dplyr)
+library(nortest)
+library(stats)
+library(car)
+library(gtsummary)
+
+# seleccionar solo los nombres de los genes
+genes <- names(df %>% select(starts_with("AQ_")))
+
+### --------- Prueba de normalidad para genes --------- ###
+
+# Hay algun valor NA?
+valor_NA <- sapply(genes, function(g) {
+  any(is.na(df[[g]]))
+})
+
+normalidad <- sapply(genes, function(g){
+  x <- df[[g]]
+  if(length(x) > 50){
+    p <- ad.test(x)$p.value     # prueba Anderson-Darling para N > 50
+  } else {
+    p <- shapiro.test(x)$p.value # Shapiro Wilk test
+  }
+  return(p >= 0.05)   # TRUE = normal
+})
+
+
+# Tabla para Modelo 1 que indica normalidad de genes
+
+normalidad_summ <- data.frame(
+  Variable = genes,
+  Test_utilizado = ifelse(sapply(genes, function(g) length(df[[g]]) > 50),
+                          "Anderson-Darling", "Shapiro-Wilk"),
+  Valor_p = sapply(genes, function(g){
+    x <- df[[g]]
+    p <- if(length(x) > 50) ad.test(x)$p.value else shapiro.test(x)$p.value
+    formatC(p, format = "e", digits = 3)   # notación científica
+  }),
+  Interpretación = ifelse(normalidad, 
+                          "Compatible con normalidad", 
+                          "No normal")
+)
+normalidad_summ
+
+```
+
+2.	Calcular y analizar estadísticas descriptivas de los valores sin transformar (media + desviación estándar si son paramétricas, mediana + rango intercuartílico (p25-p75) si no lo son) de las variables bioquímicas, síntomas, sociodemográficas y de los genes:
+-	En función del tratamiento (1er nivel) y de la extensión tumoral (2º nivel), crea una tabla descriptiva (tabla modelo 2) únicamente con las variables de genes.
+-	En función de la edad en 2 categorías según la mediana (categoría 1: edad <percentil 50 de edad; categoría 2: edad >=percentil 50 de edad), crea una tabla descriptiva (tabla modelo 3) únicamente con las variables de genes.
+
+```{r}
+
+## ------ Pruebas de estadísticas descriptivas ------ ##
+
+# Seleccionar las columnas con las tengo que trabajar
+variables <- df %>% select(-1:-3)
+variables_names <- names(variables)
+
+# Establecer cuales son las variables categoricas y no categoricas
+numerico <- sapply(variables, is.numeric)
+parametrico <- names(variables[, numerico])
+non_parametrico <- names(variables[, !numerico])
+
+norm_parametrico <- sapply(parametrico, function(g){
+  x <- df[[g]]; x <- x[!is.na(x)]
+  if(length(x) > 50){
+    p <- ad.test(x)$p.value
+  } else {
+    p <- shapiro.test(x)$p.value
+  }
+  return(p >= 0.05)   # TRUE = normal
+})
+
+
+func_parametricos <- lapply(norm_parametrico, function(is_normal) {
+  if (is_normal)
+    "{mean} ({sd})"           #media + desviación estándar si son paramétricas
+  else
+    "{median} ({p25}–{p75})"  # mediana + rango intercuartílico (p25-p75) si no son parametricas
+})
+  
+names(func_parametricos) <- parametrico 
+
+
+## Tabla 2 ##
+
+tabla_parametricos <- df %>%
+  select(tratamiento, extension, all_of(parametrico)) %>%
+  tbl_strata(
+    strata = tratamiento,
+    .tbl_fun = ~ .x %>%
+      tbl_summary(
+        by = extension,
+        type = all_of(parametrico) ~ "continuous",
+        statistic = func_parametricos,
+        digits = all_continuous() ~ 1
+      ) %>%
+      add_p(
+        test = all_continuous() ~ "kruskal.test",
+        pvalue_fun = ~ style_pvalue(.x, digits = 3)
+      )
+  )
+
+non_parametrico_ok <- non_parametrico[sapply(non_parametrico, function(var) {
+  all(sapply(split(df[[var]], df$tratamiento), function(x) length(unique(x[!is.na(x)])) > 1))
+})]
+
+tabla_no_parametricos <- df %>%
+  select(tratamiento, extension, all_of(non_parametrico_ok)) %>%
+  tbl_strata(
+    strata = tratamiento,
+    .tbl_fun = ~ .x %>%
+      tbl_summary(
+        by = extension,
+        statistic = all_categorical() ~ "{n} ({p}%)"
+      ) %>%
+      add_p(
+        test = all_categorical() ~ "fisher.test",
+        pvalue_fun = ~ style_pvalue(.x, digits = 3)
+      )
+  )
+
+
+tabla_parametricos
+tabla_no_parametricos
+
+```
+

@@ -7,6 +7,7 @@
 rm(list = ls())
 set.seed(123)
 
+#install.packages(c("gtsummary", "nortest"))
 library(dplyr)
 library(gtsummary)
 library(nortest)

@@ -10,6 +10,7 @@ setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
 #BiocManager::install("ggplot2")
 #BiocManager::install("tidyr")
 
+# Cargar libraries
 library(BiocManager)
 library(ggplot2)
 library(dplyr)
@@ -70,41 +71,51 @@ matriz_Resultado <- matrizA + matrizB
 # Ayuda: para obtener valores random puedes usar las funciones runif(), rnorm(), rexp(), sample().
 
 # Definir vector con numeros random redondeados a dos decimales 
+set.seed(345) # seed para que los resultados sean replicables
 vector_random <- round(runif(50, min = -50, max = 50), 2)
 
 # Encuentra el valor máximo y mínimo del vector. 
 # Minimo
-min(vector_random) # resultado = -47.94
+set.seed(345)
+minimo <- min(vector_random) # resultado = -49.51
 # Maximo
-max(vector_random) # resultado = 48.17
+set.seed(345)
+maximo <- max(vector_random) # resultado = 47.77
 
 #	Calcula la media y la mediana.
 # Media
-mean(vector_random) # resultado = 4.2746
+set.seed(345)
+media <- mean(vector_random) # resultado = 2.8804
 # Mediana
-median(vector_random) # resultado = 8.01
+set.seed(345)
+mediana <- median(vector_random) # resultado = 6.455
  
 #	Determina la desviación estándar.
-sd(vector_random) # resultado = 26.36669
+set.seed(345)
+desviacion_estandar <- sd(vector_random) # resultado = 30.72207
 
 #	Ordena los valores del vector en orden ascendente y descendente.
 # Orden ascendente
-sort(vector_random)
+set.seed(345)
+ascendente <- sort(vector_random)
 # Orden descendente
-sort(vector_random, decreasing = TRUE)
+set.seed(345)
+descendente <- sort(vector_random, decreasing = TRUE)
 
 #	Calcula la suma y el producto de todos los elementos del vector.
 # Suma
-sum(vector_random) #resultado = 213.73
+set.seed(345)
+suma <- sum(vector_random) #resultado = 144.02
 # Producto
-prod(vector_random) #resultado = 4.311265e+59
+set.seed(345)
+producto <- prod(vector_random) #resultado = -7.337073e+66
 
 # 10.	Desarrolla, utilizando sentecias if – else if - else, un bloque de código que lea un 
 # nucleótido ingresado por el usuario y determine si es Adenina (A), Timina (T), Citosina (C) 
 # o Guanina (G). Si el nucleótido ingresado no es válido, debe informar al usuario del error.
 
 # readline funciona para leer una linea desde la consola
-nucleotido <- readline("Introduce un nucleótido: ")
+nucleotido <- toupper(readline("Introduce un nucleótido: "))
 
 if(nucleotido == "A"){ # Primer caso
   print("Adenina")
@@ -131,13 +142,13 @@ print(paste("Suma:", x))
 # y el promedio de todos los números pares comprendidos entre 1 y 50 (ambos inclusive). 
 y <- 0 # variable global para guardar el resultado de la suma final
 j <- 1 # primer valor de j para el while loop
-par <- 0 # cuenta el numero de pares
+par <- 0 # cuenta el numero de numeros pares
 while (1 <= j && j <= 50) {
   if(j %% 2 == 0){  # es numero par?
     y <- y + j
     par <- par + 1  
   }
-  j <- j + 1 
+  j <- j + 1 # evita que el while loop se haga infinito
 }
 promedio <- y / par  # suma/numero de pares
 print(paste("suma:", y))
@@ -150,13 +161,15 @@ print(paste("promedio:", promedio))
 
 Deteccion_Nucleotido <- function(nucleotido){
   
-  if(nucleotido == "A"){ # Primer caso
+  nt <- toupper(nucleotido) # cambia la letra a mayuscula
+  
+  if(nt == "A"){ # Primer caso
     print("Adenina")
-  } else if(nucleotido == "T"){ # Segundo caso
+  } else if(nt == "T"){ # Segundo caso
     print("Timina")
-  } else if(nucleotido == "C"){ # Tercer caso
+  } else if(nt == "C"){ # Tercer caso
     print("Citosina")
-  } else if(nucleotido == "G"){ # Cuarto caso
+  } else if(nt == "G"){ # Cuarto caso
     print("Guanina")
   } else {
     print("El nucleótido ingresado no es válido") # Respuesta default
@@ -167,4 +180,6 @@ Deteccion_Nucleotido("T")
 Deteccion_Nucleotido("A")
 Deteccion_Nucleotido("G")
 Deteccion_Nucleotido("C")
+Deteccion_Nucleotido("a")
 Deteccion_Nucleotido("s")
+
