@@ -21,14 +21,15 @@ knitr::opts_chunk$set(
 
 # Actividades:
 
-1. Comprobar la normalidad de los genes y realizar una interpretación de los resultados obtenidos:
-- Utilizar pruebas estadísticas de normalidad (recuerda que Shapiro-Wilk funciona cuando la N es pequeña, si no puedes usar otras como addtest). 
-- Refleja los valores p del contraste de hipótesis en una tabla modelo 1 adjunta al final de documento en la sección «Extensión y formato».
+1.  Comprobar la normalidad de los genes y realizar una interpretación de los resultados obtenidos:
 
+-   Utilizar pruebas estadísticas de normalidad (recuerda que Shapiro-Wilk funciona cuando la N es pequeña, si no puedes usar otras como addtest).
+-   Refleja los valores p del contraste de hipótesis en una tabla modelo 1 adjunta al final de documento en la sección «Extensión y formato».
 
 ```{r}
 #Remover todas las variables creadas en environment so far
 rm(list=ls())
+#Set el directorio para trabajar 
 setwd("C:/Users/User/Desktop/UNIR/Estadistica_R/Statistics_and_R")
 
 #Save the data in our environment
@@ -37,7 +38,7 @@ df <- read.csv(file, fileEncoding="UTF-8-BOM", check.names=FALSE)
 
 #Install libraries
 #install.packages(c("ggplot2", "nortest", "car", "gtsummary", "dplyr"))
-
+#Libraries
 library(ggplot2)
 library(dplyr)
 library(nortest)
@@ -50,25 +51,24 @@ genes <- names(df %>% select(starts_with("AQ_")))
 
 ### --------- Prueba de normalidad para genes --------- ###
 
-
 normalidad <- sapply(genes, function(g){
-  x <- df[[g]]; x <- x[!is.na(x)]
+  x <- df[[g]]; x <- x[!is.na(x)]   # revisar si tenemos algun NA
   x <- df[[g]]
   if(length(x) > 50){
-    p <- ad.test(x)$p.value     # prueba Anderson-Darling para N > 50
+    p <- ad.test(x)$p.value     # prueba Anderson-Darling para N >= 50
   } else {
-    p <- shapiro.test(x)$p.value # Shapiro Wilk test
+    p <- shapiro.test(x)$p.value # Shapiro Wilk para N < 50
   }
-  return(p >= 0.05)   # TRUE = normal
+  return(p >= 0.05)   # si TRUE = normal
 })
 
 
-# Tabla para Modelo 1 que indica normalidad de genes
+## ----- Tabla Modelo 1 ---------- ##
 
 normalidad_summ <- data.frame(
   Variable = genes,
   Test_utilizado = ifelse(sapply(genes, function(g) length(df[[g]]) > 50),
-                          "Anderson-Darling", "Shapiro-Wilk"),
+                          "Anderson-Darling", "Shapiro-Wilk"),  # incluir en tabla test
   Valor_p = sapply(genes, function(g){
     x <- df[[g]]
     p <- if(length(x) > 50) ad.test(x)$p.value else shapiro.test(x)$p.value
@@ -76,14 +76,15 @@ normalidad_summ <- data.frame(
   }),
   Interpretación = ifelse(normalidad, 
                           "Compatible con normalidad", 
-                          "No normal")
+                          "No normal")   #interpretacion
 )
 normalidad_summ
 
 ```
 
-2.	Calcular y analizar estadísticas descriptivas de los valores sin transformar (media + desviación estándar si son paramétricas, mediana + rango intercuartílico (p25-p75) si no lo son) de las variables bioquímicas, síntomas, sociodemográficas y de los genes:
--	En función del tratamiento (1er nivel) y de la extensión tumoral (2º nivel), crea una tabla descriptiva (tabla modelo 2) únicamente con las variables de genes.
+2.  Calcular y analizar estadísticas descriptivas de los valores sin transformar (media + desviación estándar si son paramétricas, mediana + rango intercuartílico (p25-p75) si no lo son) de las variables bioquímicas, síntomas, sociodemográficas y de los genes:
+
+-   En función del tratamiento (1er nivel) y de la extensión tumoral (2º nivel), crea una tabla descriptiva (tabla modelo 2) únicamente con las variables de genes.
 
 ```{r}
 
@@ -101,9 +102,9 @@ categorical <- names(variables[, !numerico])
 norm_parametrico <- sapply(parametrico, function(g){
   x <- df[[g]]; x <- x[!is.na(x)]
   if(length(x) > 50){
-    p <- ad.test(x)$p.value
+    p <- ad.test(x)$p.value    # Anderson-Darling para N > 50
   } else {
-    p <- shapiro.test(x)$p.value
+    p <- shapiro.test(x)$p.value #Shapiro Wilkins para N < 50
   }
   return(p >= 0.05)   # TRUE = normal
 })
@@ -113,16 +114,16 @@ func_parametricos <- lapply(norm_parametrico, function(is_normal) {
   if (is_normal)
     "{mean} ({sd})"           #media + desviación estándar si son paramétricas
   else
-    "{median} ({p25}–{p75})"  # mediana + rango intercuartílico (p25-p75) si no son parametricas
+    "{median} ({p25}–{p75})"  # mediana + rango intercuartílico (p25-p75) si no lo son
 })
   
 names(func_parametricos) <- parametrico 
 
 
-## Tabla 2 ##
-
+## ---------- Modelo Tabla 2 ----------- ##
+# Tabla para mostrar las variables que son numericas 
 tabla_parametricos <- df %>%
-  select(tratamiento, extension, all_of(parametrico)) %>%
+  select(tratamiento, extension, all_of(parametrico)) %>% 
   tbl_strata(
     strata = tratamiento,
     .tbl_fun = ~ .x %>%
@@ -133,12 +134,12 @@ tabla_parametricos <- df %>%
         digits = all_continuous() ~ 1
       ) %>%
       add_p(
-        test = all_continuous() ~ "kruskal.test",
+        test = all_continuous() ~ "kruskal.test",  # Kruskal–Wallis porque la                                                               distributcion no es normal
         pvalue_fun = ~ style_pvalue(.x, digits = 3)
       )
   )
 
-
+# Tabla para mostrar las variables que son categoricas
 tabla_no_parametricos <- df %>%
   select(tratamiento, extension, all_of(categorical)) %>%
   tbl_strata(
@@ -146,10 +147,10 @@ tabla_no_parametricos <- df %>%
     .tbl_fun = ~ .x %>%
       tbl_summary(
         by = extension,
-        statistic = all_categorical() ~ "{n} ({p}%)"
+        statistic = all_categorical() ~ "{n} ({p}%)" #porcentage para describir a                                                           variables categoricas 
       ) %>%
       add_p(
-        test = all_categorical() ~ "fisher.test",
+        test = all_categorical() ~ "chisq.test",  #Chi test para variables categoricas
         pvalue_fun = ~ style_pvalue(.x, digits = 3)
       )
   )
@@ -160,16 +161,16 @@ tabla_no_parametricos
 
 ```
 
--	En función de la edad en 2 categorías según la mediana (categoría 1: edad <percentil 50 de edad; categoría 2: edad >=percentil 50 de edad), crea una tabla descriptiva (tabla modelo 3) únicamente con las variables de genes.
+-   En función de la edad en 2 categorías según la mediana (categoría 1: edad \<percentil 50 de edad; categoría 2: edad \>=percentil 50 de edad), crea una tabla descriptiva (tabla modelo 3) únicamente con las variables de genes.
 
 ```{r}
 
-p50 <- median(df$edad)
+p50 <- median(df$edad)  #mediana de la edad
 
 df <- df %>%
-  mutate(edad_cat = ifelse(edad < p50, "Edad < P50", "Edad ≥ P50") %>% factor())
+  mutate(edad_cat = ifelse(edad < p50, "Edad < P50", "Edad ≥ P50") %>% factor()) #aumentar una columna con la informacion de la edad. 
 
-
+#Si los genes cumplen con distribucion normal
 gene_list <- lapply(normalidad, function(is_normal) {
   if (is_normal)
     "{mean} ({sd})"           
@@ -179,6 +180,7 @@ gene_list <- lapply(normalidad, function(is_normal) {
   
 names(gene_list) <- genes 
 
+##----------- Tabla Modelo 3 ------------- ##
 
 tabla_modelo3 <- df %>%
   select(edad_cat, all_of(genes)) %>%
@@ -188,7 +190,7 @@ tabla_modelo3 <- df %>%
     digits = all_continuous() ~ 2
   ) %>%
   add_p(
-    test = all_continuous() ~ "wilcox.test",
+    test = all_continuous() ~ "wilcox.test", #wilcox test porque no cumple con normal.
     pvalue_fun = ~ style_pvalue(.x, digits = 3)
   )
 
@@ -196,4 +198,3 @@ tabla_modelo3
 
 
 ```
-
