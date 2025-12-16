@@ -82,7 +82,7 @@ normalidad_summ
 
 ```
 
-2.  Calcular y analizar estadísticas descriptivas de los valores sin transformar (media + desviación estándar si son paramétricas, mediana + rango intercuartílico (p25-p75) si no lo son) de las variables bioquímicas, síntomas, sociodemográficas y de los genes:
+2.  Calcular y analizar si no lo son de las variables bioquímicas, síntomas, sociodemográficas y de los genes:
 
 -   En función del tratamiento (1er nivel) y de la extensión tumoral (2º nivel), crea una tabla descriptiva (tabla modelo 2) únicamente con las variables de genes.
 
@@ -140,7 +140,7 @@ tabla_parametricos <- df %>%
   )
 
 # Tabla para mostrar las variables que son categoricas
-tabla_no_parametricos <- df %>%
+tabla_categoricos <- df %>%
   select(tratamiento, extension, all_of(categorical)) %>%
   tbl_strata(
     strata = tratamiento,
@@ -157,9 +157,11 @@ tabla_no_parametricos <- df %>%
 
 
 tabla_parametricos
-tabla_no_parametricos
+tabla_categoricos
 
 ```
+
+Las estadísticas descriptivas de la tabla de variables categóricas podría estar incorrectas puesto que en algunos de los grupos de extensión solo hay un valor posible. La tabla se muestra pero no fue analizada, ni tomada en cuenta para futuras descripciones. 
 
 -   En función de la edad en 2 categorías según la mediana (categoría 1: edad \<percentil 50 de edad; categoría 2: edad \>=percentil 50 de edad), crea una tabla descriptiva (tabla modelo 3) únicamente con las variables de genes.
 
@@ -187,7 +189,7 @@ tabla_modelo3 <- df %>%
   tbl_summary(
     by = edad_cat,
     statistic = gene_list,
-    digits = all_continuous() ~ 2
+    digits = all_continuous() ~ 1
   ) %>%
   add_p(
     test = all_continuous() ~ "wilcox.test", #wilcox test porque no cumple con normal.
