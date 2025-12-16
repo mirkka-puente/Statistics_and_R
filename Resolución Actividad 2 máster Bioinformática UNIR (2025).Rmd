@@ -2,7 +2,13 @@
 title: "Resolución Actividad 2 máster Bioinformática UNIR (2025)"
 author: "Mirkka Jossette Puente Madrid"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float: true
+    number_sections: true
+    highlight: tango
 ---
 
 ```{r setup, include=FALSE}
@@ -44,12 +50,9 @@ genes <- names(df %>% select(starts_with("AQ_")))
 
 ### --------- Prueba de normalidad para genes --------- ###
 
-# Hay algun valor NA?
-valor_NA <- sapply(genes, function(g) {
-  any(is.na(df[[g]]))
-})
 
 normalidad <- sapply(genes, function(g){
+  x <- df[[g]]; x <- x[!is.na(x)]
   x <- df[[g]]
   if(length(x) > 50){
     p <- ad.test(x)$p.value     # prueba Anderson-Darling para N > 50
@@ -81,7 +84,6 @@ normalidad_summ
 
 2.	Calcular y analizar estadísticas descriptivas de los valores sin transformar (media + desviación estándar si son paramétricas, mediana + rango intercuartílico (p25-p75) si no lo son) de las variables bioquímicas, síntomas, sociodemográficas y de los genes:
 -	En función del tratamiento (1er nivel) y de la extensión tumoral (2º nivel), crea una tabla descriptiva (tabla modelo 2) únicamente con las variables de genes.
--	En función de la edad en 2 categorías según la mediana (categoría 1: edad <percentil 50 de edad; categoría 2: edad >=percentil 50 de edad), crea una tabla descriptiva (tabla modelo 3) únicamente con las variables de genes.
 
 ```{r}
 
@@ -94,7 +96,7 @@ variables_names <- names(variables)
 # Establecer cuales son las variables categoricas y no categoricas
 numerico <- sapply(variables, is.numeric)
 parametrico <- names(variables[, numerico])
-non_parametrico <- names(variables[, !numerico])
+categorical <- names(variables[, !numerico])
 
 norm_parametrico <- sapply(parametrico, function(g){
   x <- df[[g]]; x <- x[!is.na(x)]
@@ -136,12 +138,9 @@ tabla_parametricos <- df %>%
       )
   )
 
-non_parametrico_ok <- non_parametrico[sapply(non_parametrico, function(var) {
-  all(sapply(split(df[[var]], df$tratamiento), function(x) length(unique(x[!is.na(x)])) > 1))
-})]
 
 tabla_no_parametricos <- df %>%
-  select(tratamiento, extension, all_of(non_parametrico_ok)) %>%
+  select(tratamiento, extension, all_of(categorical)) %>%
   tbl_strata(
     strata = tratamiento,
     .tbl_fun = ~ .x %>%
@@ -158,6 +157,43 @@ tabla_no_parametricos <- df %>%
 
 tabla_parametricos
 tabla_no_parametricos
+
+```
+
+-	En función de la edad en 2 categorías según la mediana (categoría 1: edad <percentil 50 de edad; categoría 2: edad >=percentil 50 de edad), crea una tabla descriptiva (tabla modelo 3) únicamente con las variables de genes.
+
+```{r}
+
+p50 <- median(df$edad)
+
+df <- df %>%
+  mutate(edad_cat = ifelse(edad < p50, "Edad < P50", "Edad ≥ P50") %>% factor())
+
+
+gene_list <- lapply(normalidad, function(is_normal) {
+  if (is_normal)
+    "{mean} ({sd})"           
+  else
+    "{median} ({p25}–{p75})"
+})
+  
+names(gene_list) <- genes 
+
+
+tabla_modelo3 <- df %>%
+  select(edad_cat, all_of(genes)) %>%
+  tbl_summary(
+    by = edad_cat,
+    statistic = gene_list,
+    digits = all_continuous() ~ 2
+  ) %>%
+  add_p(
+    test = all_continuous() ~ "wilcox.test",
+    pvalue_fun = ~ style_pvalue(.x, digits = 3)
+  )
+
+tabla_modelo3
+
 
 ```
 
